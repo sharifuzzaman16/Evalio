@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import type { NextApiHandler } from "next";
-import type { NextRequestHandlerContext } from "next/server";
+
+interface RouteContext {
+  params: Promise<{ id: string }>;
+}
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: RouteContext
 ) {
   const session = await getServerSession(authOptions);
 
@@ -17,7 +19,7 @@ export async function PATCH(
 
   try {
     const { status, feedback } = await request.json();
-    const submissionId = context.params.id;
+    const { id: submissionId } = await context.params;
 
     if (!status) {
       return NextResponse.json(
