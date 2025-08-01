@@ -1,4 +1,3 @@
-
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
@@ -25,7 +24,7 @@ export const authOptions: NextAuthOptions = {
         }
         return {
           id: user.id,
-          name: user.name,
+          name: user.name || "",
           email: user.email,
           role: user.role,
         };
@@ -45,8 +44,8 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.id;
-        session.user.role = token.role;
+        (session.user as any).id = token.id;
+        (session.user as any).role = token.role;
       }
       return session;
     },
