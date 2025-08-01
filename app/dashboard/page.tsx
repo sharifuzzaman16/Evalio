@@ -1,9 +1,18 @@
 
-import { getSubmissionStatusCounts } from "@/lib/data";
 import SubmissionsPieChart from "@/components/SubmissionPieChart";
+import prisma from "@/lib/prisma";
 
 export default async function DashboardPage() {
-  const statusCounts = await getSubmissionStatusCounts();
+const statusCountsData = await prisma.submission.groupBy({
+    by: ['status'],
+    _count: {
+        status: true,
+    },
+});
+const statusCounts = statusCountsData.reduce((acc, curr) => {
+    acc[curr.status] = curr._count.status;
+    return acc;
+}, {} as { [key: string]: number });
 
   return (
     <div className="max-w-4xl p-8 mx-auto">

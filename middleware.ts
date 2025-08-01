@@ -11,7 +11,7 @@ export default withAuth(
       authorized: ({ req, token }) => {
    
         if (req.nextUrl.pathname.startsWith("/assignments/create")) {
-          return token?.role === "instructor";
+          return token?.role === "INSTRUCTOR";
         }
 
         return !!token;

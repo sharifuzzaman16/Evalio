@@ -1,18 +1,18 @@
-
-import { getAssignmentById, getSubmissionForStudent, getSubmissionsForAssignment } from "@/lib/data";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { notFound } from "next/navigation";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import prisma from "@/lib/prisma";
 import SubmissionForm from "@/components/SubmissionForm";
 import ReviewPanel from "@/components/ReviewPanel";
 
-interface PageProps {
-  params: { id: string };
-}
-
-export default async function AssignmentDetailPage({ params }: PageProps) {
+export default async function AssignmentDetailPage({ params: { id } }: { params: { id: string } }) {
+  
   const session = await getServerSession(authOptions);
-  const assignment = await getAssignmentById(params.id);
+  
+  const assignment = await prisma.assignment.findUnique({
+    where: { id: id },
+  });
+
 
   if (!assignment) {
     notFound();
@@ -20,17 +20,32 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
 
   let studentSubmission = null;
   let allSubmissions = [];
-  
-  if (session?.user?.role === "student") {
-    studentSubmission = await getSubmissionForStudent(assignment.id, session.user.id);
-  } else if (session?.user?.role === "instructor") {
-    allSubmissions = await getSubmissionsForAssignment(assignment.id);
+
+  if (session?.user?.role === "STUDENT") {
+    studentSubmission = await prisma.submission.findFirst({
+      where: {
+        assignmentId: assignment.id,
+        studentId: session.user.id,
+      },
+    });
+  } else if (session?.user?.role === "INSTRUCTOR") {
+allSubmissions = await prisma.submission.findMany({
+    where: { assignmentId: assignment.id },
+    include: {
+      student: true,
+    },
+    orderBy: {
+      student: {
+        name: 'asc',
+      },
+    },
+});
   }
 
   const getStatusChipColor = (status: string) => {
     switch (status) {
-      case "Accepted": return "bg-green-100 text-green-800";
-      case "Rejected": return "bg-red-100 text-red-800";
+      case "ACCEPTED": return "bg-green-100 text-green-800";
+      case "REJECTED": return "bg-red-100 text-red-800";
       default: return "bg-yellow-100 text-yellow-800";
     }
   };
@@ -48,7 +63,7 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
       </div>
 
       <div className="mt-8">
-        {session?.user?.role === "student" ? (
+        {session?.user?.role === "STUDENT" ? (
           studentSubmission ? (
             <div className="p-6 bg-white rounded-lg shadow-md">
               <h2 className="text-xl font-semibold text-gray-800">Your Submission</h2>
@@ -62,7 +77,7 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
           ) : (
             <SubmissionForm assignmentId={assignment.id} />
           )
-        ) : session?.user?.role === "instructor" ? (
+        ) : session?.user?.role === "INSTRUCTOR" ? (
           <ReviewPanel submissions={allSubmissions} />
         ) : (
           <div className="p-6 text-center bg-gray-100 rounded-lg">

@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// Enum for User Roles
+enum Role {
+  STUDENT
+  INSTRUCTOR
+}
+
+// User Model
+model User {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  email      String   @unique
+  name       String?
+  password   String // hash this!
+  role       Role     @default(STUDENT)
+  
+  // Relations
+  createdAssignments Assignment[]  @relation("CreatedBy")
+  submissions      Submission[]  @relation("SubmittedBy")
+}
+
+// Enum for Submission Status
+enum SubmissionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+// Assignment Model
+model Assignment {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  deadline    DateTime
+  
+  // Relations
+  authorId    String     @db.ObjectId
+  author      User       @relation("CreatedBy", fields: [authorId], references: [id])
+  submissions Submission[]
+}
+
+// Submission Model
+model Submission {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  submissionUrl String
+  note          String?
+  status        SubmissionStatus @default(PENDING)
+  feedback      String?
+  
+  // Relations
+  assignmentId  String     @db.ObjectId
+  assignment    Assignment @relation(fields: [assignmentId], references: [id])
+  studentId     String     @db.ObjectId
+  student       User       @relation("SubmittedBy", fields: [studentId], references: [id])
+
+  @@unique([assignmentId, studentId])
+}

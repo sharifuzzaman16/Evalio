@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Submission } from "@/lib/data";
 
 interface ReviewPanelProps {
   submissions: Submission[];
@@ -63,7 +62,7 @@ function SubmissionEditor({ submission, onUpdate }: { submission: Submission, on
   return (
     <div className="p-4 border rounded-lg">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-lg">{submission.studentName}</h3>
+        <h3 className="font-semibold text-lg">{submission.student.name}</h3>
         <a href={submission.submissionUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-indigo-600 hover:underline">View Submission</a>
       </div>
       <p className="mt-2 text-sm text-gray-600"><strong>Note:</strong> {submission.note || "N/A"}</p>

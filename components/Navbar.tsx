@@ -25,7 +25,7 @@ export default function Navbar() {
               >
                 Assignments
               </Link>
-              {session?.user?.role === "instructor" && (
+              {session?.user?.role === "INSTRUCTOR" && (
                 <>
                   <Link
                     href="/assignments/create"

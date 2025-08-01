@@ -1,8 +1,10 @@
-import { getAssignments } from "@/lib/data";
+import prisma from "@/lib/prisma";
 import Link from "next/link";
 
 export default async function AssignmentsPage() {
-  const assignments = await getAssignments();
+const assignments = await prisma.assignment.findMany({
+    orderBy: { deadline: 'asc' }
+});
 
   return (
     <div className="min-h-screen bg-gray-100">

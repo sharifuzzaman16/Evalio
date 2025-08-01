@@ -1,47 +1,55 @@
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
-import { addSubmission, getSubmissionForStudent } from "@/lib/data";
+import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
-  
-  if (!session || !session.user || session.user?.role !== "student") {
-    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
-  }
+  try {
+    const session = await getServerSession(authOptions);
 
-  const { assignmentId, submissionUrl, note } = await request.json();
-  const studentId = session.user.id as string;
-  const studentName = session.user.name as string;
+    if (!session || !session.user || session.user?.role !== "STUDENT") {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+    }
 
-  if (!assignmentId || !submissionUrl) {
-    return NextResponse.json(
-      { message: "Missing required fields" },
-      { status: 400 }
-    );
-  }
+    const { assignmentId, submissionUrl, note } = await request.json();
+    const studentId = session.user.id;
 
-  const existingSubmission = await getSubmissionForStudent(assignmentId, studentId);
-  if (existingSubmission) {
-    return NextResponse.json(
+    if (!assignmentId || !submissionUrl) {
+      return NextResponse.json(
+        { message: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+    
+    const existingSubmission = await prisma.submission.findFirst({
+      where: {
+        assignmentId: assignmentId,
+        studentId: studentId,
+      },
+    });
+
+    if (existingSubmission) {
+      return NextResponse.json(
         { message: "You have already submitted this assignment." },
         { status: 409 } 
-    );
-  }
+      );
+    }
 
-  try {
-    const newSubmission = await addSubmission({
-      assignmentId,
-      studentId,
-      studentName,
-      submissionUrl,
-      note,
+    const newSubmission = await prisma.submission.create({
+      data: {
+        submissionUrl,
+        note,
+        assignmentId,
+        studentId,
+      },
     });
+
     return NextResponse.json(newSubmission, { status: 201 });
   } catch (error) {
+    console.error("Submission Error:", error);
     return NextResponse.json(
-      { message: "Error creating submission" },
+      { message: "An error occurred while creating the submission." },
       { status: 500 }
     );
   }
