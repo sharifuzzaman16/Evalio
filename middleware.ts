@@ -23,5 +23,6 @@ export default withAuth(
 export const config = {
   matcher: [
     "/assignments/create",
+    "/dashboard",
   ],
 };

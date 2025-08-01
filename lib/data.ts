@@ -74,3 +74,40 @@ export const getSubmissionForStudent = async (assignmentId: string, studentId: s
     (s) => s.assignmentId === assignmentId && s.studentId === studentId
   );
 };
+
+
+export const getSubmissionsForAssignment = async (assignmentId: string): Promise<Submission[]> => {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  return submissions.filter((s) => s.assignmentId === assignmentId);
+};
+
+export const updateSubmissionStatus = async (
+  submissionId: string,
+  status: "Pending" | "Accepted" | "Rejected",
+  feedback: string
+): Promise<Submission | undefined> => {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  const submissionIndex = submissions.findIndex((s) => s.id === submissionId);
+
+  if (submissionIndex === -1) {
+    return undefined;
+  }
+
+  submissions[submissionIndex] = {
+    ...submissions[submissionIndex],
+    status,
+    feedback,
+  };
+
+  return submissions[submissionIndex];
+};
+
+export const getSubmissionStatusCounts = async (): Promise<{ [key: string]: number }> => {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const counts = submissions.reduce((acc, submission) => {
+        acc[submission.status] = (acc[submission.status] || 0) + 1;
+        return acc;
+    }, {} as { [key: string]: number });
+
+    return counts;
+};

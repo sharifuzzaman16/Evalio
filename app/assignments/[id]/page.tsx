@@ -1,9 +1,10 @@
 
-import { getAssignmentById, getSubmissionForStudent } from "@/lib/data";
+import { getAssignmentById, getSubmissionForStudent, getSubmissionsForAssignment } from "@/lib/data";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { notFound } from "next/navigation";
 import SubmissionForm from "@/components/SubmissionForm";
+import ReviewPanel from "@/components/ReviewPanel";
 
 interface PageProps {
   params: { id: string };
@@ -18,11 +19,12 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
   }
 
   let studentSubmission = null;
+  let allSubmissions = [];
+  
   if (session?.user?.role === "student") {
-    studentSubmission = await getSubmissionForStudent(
-      assignment.id,
-      session.user.id
-    );
+    studentSubmission = await getSubmissionForStudent(assignment.id, session.user.id);
+  } else if (session?.user?.role === "instructor") {
+    allSubmissions = await getSubmissionsForAssignment(assignment.id);
   }
 
   const getStatusChipColor = (status: string) => {
@@ -61,10 +63,7 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
             <SubmissionForm assignmentId={assignment.id} />
           )
         ) : session?.user?.role === "instructor" ? (
-          <div className="p-6 text-center bg-white rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold text-gray-800">Submissions Panel</h2>
-            <p className="mt-2 text-gray-600">The review panel for this assignment will be available here.</p>
-          </div>
+          <ReviewPanel submissions={allSubmissions} />
         ) : (
           <div className="p-6 text-center bg-gray-100 rounded-lg">
             <p className="text-gray-600">Please log in as a student to submit this assignment.</p>
