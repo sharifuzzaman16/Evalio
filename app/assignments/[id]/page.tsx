@@ -23,7 +23,7 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
   }
 
   let studentSubmission = null;
-  let allSubmissions = [];
+  let allSubmissions: any[] = [];
 
   if (session?.user?.role === "STUDENT") {
     studentSubmission = await prisma.submission.findFirst({
