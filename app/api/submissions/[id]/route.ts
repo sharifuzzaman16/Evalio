@@ -4,14 +4,10 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
-
-interface RouteContext {
-  params: {
-    id: string;
-  };
-}
-
-export async function PATCH(request: Request, { params }: RouteContext) {
+export async function PATCH(
+  request: Request,
+  context: { params: { id: string } } 
+) {
   const session = await getServerSession(authOptions);
   if (!session || session.user?.role !== "INSTRUCTOR") {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
@@ -19,12 +15,19 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
   try {
     const { status, feedback } = await request.json();
-    const submissionId = params.id;
+    const submissionId = context.params.id;
+
+    if (!status) {
+      return NextResponse.json(
+        { message: "Status is required" },
+        { status: 400 }
+      );
+    }
 
     const updatedSubmission = await prisma.submission.update({
       where: { id: submissionId },
       data: {
-        status: status.toUpperCase(),
+        status: status.toUpperCase() as "PENDING" | "ACCEPTED" | "REJECTED",
         feedback,
       },
     });
