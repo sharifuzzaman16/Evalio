@@ -1,13 +1,17 @@
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
-export async function PATCH(
-  request: Request,
-  { params: { id } }: { params: { id: string } }
-) {
+
+interface RouteContext {
+  params: {
+    id: string;
+  };
+}
+
+export async function PATCH(request: Request, { params }: RouteContext) {
   const session = await getServerSession(authOptions);
   if (!session || session.user?.role !== "INSTRUCTOR") {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
@@ -15,14 +19,7 @@ export async function PATCH(
 
   try {
     const { status, feedback } = await request.json();
-    const submissionId = id;
-
-    if (!status) {
-      return NextResponse.json(
-        { message: "Status is required" },
-        { status: 400 }
-      );
-    }
+    const submissionId = params.id;
 
     const updatedSubmission = await prisma.submission.update({
       where: { id: submissionId },
@@ -31,13 +28,6 @@ export async function PATCH(
         feedback,
       },
     });
-
-    if (!updatedSubmission) {
-      return NextResponse.json(
-        { message: "Submission not found" },
-        { status: 404 }
-      );
-    }
 
     return NextResponse.json(updatedSubmission, { status: 200 });
   } catch (error) {
