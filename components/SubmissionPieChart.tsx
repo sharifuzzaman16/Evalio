@@ -39,7 +39,7 @@ export default function SubmissionsPieChart({ data }: PieChartProps) {
           fill="#8884d8"
           dataKey="value"
           nameKey="name"
-          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+          label={({ name, percent }) => `${name} ${percent ? (percent * 100).toFixed(0) : 0}%`}
         >
           {chartData.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[entry.name as keyof typeof COLORS]} />
