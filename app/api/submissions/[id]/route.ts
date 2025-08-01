@@ -1,12 +1,12 @@
 
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { NextResponse } from "next/server";
 
 export async function PATCH(
   request: Request,
-  context: { params: { id: string } } 
+  { params }: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
   if (!session || session.user?.role !== "INSTRUCTOR") {
@@ -15,7 +15,7 @@ export async function PATCH(
 
   try {
     const { status, feedback } = await request.json();
-    const submissionId = context.params.id;
+    const submissionId = params.id; 
 
     if (!status) {
       return NextResponse.json(
@@ -33,6 +33,7 @@ export async function PATCH(
     });
 
     return NextResponse.json(updatedSubmission, { status: 200 });
+    
   } catch (error) {
     console.error("Error updating submission:", error);
     return NextResponse.json(
