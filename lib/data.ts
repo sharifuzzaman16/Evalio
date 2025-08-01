@@ -1,11 +1,11 @@
 
+
 export interface Assignment {
   id: string;
   title: string;
   description: string;
   deadline: string;
 }
-
 
 const assignments: Assignment[] = [
   {
@@ -22,6 +22,20 @@ const assignments: Assignment[] = [
   },
 ];
 
+export interface Submission {
+  id: string;
+  assignmentId: string;
+  studentId: string;
+  studentName: string;
+  submissionUrl: string;
+  note: string;
+  status: "Pending" | "Accepted" | "Rejected";
+  feedback?: string;
+}
+
+const submissions: Submission[] = [];
+
+
 export const getAssignments = async (): Promise<Assignment[]> => {
   await new Promise(resolve => setTimeout(resolve, 100));
   return assignments;
@@ -30,9 +44,33 @@ export const getAssignments = async (): Promise<Assignment[]> => {
 export const addAssignment = async (assignment: Omit<Assignment, "id">): Promise<Assignment> => {
   await new Promise(resolve => setTimeout(resolve, 100));
   const newAssignment: Assignment = {
-    id: String(Date.now()), 
+    id: String(Date.now()),
     ...assignment,
   };
   assignments.push(newAssignment);
   return newAssignment;
+};
+
+
+export const getAssignmentById = async (id: string): Promise<Assignment | undefined> => {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  return assignments.find((a) => a.id === id);
+};
+
+export const addSubmission = async (submissionData: Omit<Submission, "id" | "status">): Promise<Submission> => {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  const newSubmission: Submission = {
+    id: String(Date.now()),
+    status: "Pending",
+    ...submissionData,
+  };
+  submissions.push(newSubmission);
+  return newSubmission;
+};
+
+export const getSubmissionForStudent = async (assignmentId: string, studentId: string): Promise<Submission | undefined> => {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  return submissions.find(
+    (s) => s.assignmentId === assignmentId && s.studentId === studentId
+  );
 };
