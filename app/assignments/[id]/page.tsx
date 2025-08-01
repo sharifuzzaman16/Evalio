@@ -23,7 +23,7 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
   }
 
   let studentSubmission = null;
-  let allSubmissions: any[] = [];
+  let allSubmissions: any[] = []; //disable-next-line @typescript-eslint/no-explicit-any
 
   if (session?.user?.role === "STUDENT") {
     studentSubmission = await prisma.submission.findFirst({
