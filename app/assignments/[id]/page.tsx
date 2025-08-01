@@ -1,4 +1,4 @@
-import { getServerSession } from "next-auth/next";
+import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
@@ -13,6 +13,7 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
   const { id } = await params;
 
   const session = await getServerSession(authOptions);
+  const user = session?.user as { id: string; role: string } | undefined;
 
   const assignment = await prisma.assignment.findUnique({
     where: { id: id },
@@ -23,16 +24,17 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
   }
 
   let studentSubmission = null;
-  let allSubmissions: any[] = []; //disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let allSubmissions: any[] = [];
 
-  if (session?.user?.role === "STUDENT") {
+  if (user?.role === "STUDENT") {
     studentSubmission = await prisma.submission.findFirst({
       where: {
         assignmentId: assignment.id,
-        studentId: session.user.id,
+        studentId: user.id,
       },
     });
-  } else if (session?.user?.role === "INSTRUCTOR") {
+  } else if (user?.role === "INSTRUCTOR") {
     allSubmissions = await prisma.submission.findMany({
       where: { assignmentId: assignment.id },
       include: {
@@ -67,7 +69,7 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
       </div>
 
       <div className="mt-8">
-        {session?.user?.role === "STUDENT" ? (
+        {user?.role === "STUDENT" ? (
           studentSubmission ? (
             <div className="p-6 bg-white rounded-lg shadow-md">
               <h2 className="text-xl font-semibold text-gray-800">Your Submission</h2>
