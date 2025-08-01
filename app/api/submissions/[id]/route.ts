@@ -1,22 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import type { NextApiHandler } from "next";
+import type { NextRequestHandlerContext } from "next/server";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
 
-  // Fix: Correct role check
   if (!session || session.user?.role !== "INSTRUCTOR") {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
   try {
     const { status, feedback } = await request.json();
-    const submissionId = params.id;
+    const submissionId = context.params.id;
 
     if (!status) {
       return NextResponse.json(
