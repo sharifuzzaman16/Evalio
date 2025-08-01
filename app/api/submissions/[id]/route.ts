@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: any 
 ) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?.role !== "INSTRUCTOR") {
@@ -15,7 +15,7 @@ export async function PATCH(
 
   try {
     const { status, feedback } = await request.json();
-    const submissionId = params.id;
+    const submissionId = context.params.id; 
 
     if (!status) {
       return NextResponse.json(
