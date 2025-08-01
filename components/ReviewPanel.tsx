@@ -2,19 +2,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { Submission, SubmissionStatus } from "@prisma/client";
 
 interface ReviewPanelProps {
-  submissions: Submission[];
+  submissions: (Submission & { student: { name: string | null } })[];
 }
+
+type UpdateHandler = (
+  submissionId: string,
+  status: SubmissionStatus,
+  feedback: string
+) => Promise<void>;
+
 
 export default function ReviewPanel({ submissions }: ReviewPanelProps) {
   const router = useRouter();
 
-  const handleUpdate = async (
-    submissionId: string,
-    status: "Pending" | "Accepted" | "Rejected",
-    feedback: string
-  ) => {
+  const handleUpdate: UpdateHandler = async (submissionId, status, feedback) => {
     const res = await fetch(`/api/submissions/${submissionId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -48,9 +52,14 @@ export default function ReviewPanel({ submissions }: ReviewPanelProps) {
   );
 }
 
-function SubmissionEditor({ submission, onUpdate }: { submission: Submission, onUpdate: Function }) {
+interface SubmissionEditorProps {
+    submission: Submission & { student: { name: string | null } };
+    onUpdate: UpdateHandler;
+}
+
+function SubmissionEditor({ submission, onUpdate }: SubmissionEditorProps) {
   const [feedback, setFeedback] = useState(submission.feedback || "");
-  const [status, setStatus] = useState(submission.status);
+  const [status, setStatus] = useState<SubmissionStatus>(submission.status);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
@@ -82,12 +91,12 @@ function SubmissionEditor({ submission, onUpdate }: { submission: Submission, on
             <label className="block text-sm font-medium text-gray-700">Status</label>
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value as any)}
+              onChange={(e) => setStatus(e.target.value as SubmissionStatus)}
               className="px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             >
-              <option value="Pending">Pending</option>
-              <option value="Accepted">Accepted</option>
-              <option value="Rejected">Rejected</option>
+              <option value="PENDING">Pending</option>
+              <option value="ACCEPTED">Accepted</option>
+              <option value="REJECTED">Rejected</option>
             </select>
           </div>
           <button
