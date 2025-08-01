@@ -1,21 +1,21 @@
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user?.role !== "INSTRUCTOR") {
+  if (!session || !session.user?.role !== "INSTRUCTOR") {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
   try {
     const { status, feedback } = await request.json();
-    const submissionId = params.id; 
+    const submissionId = params.id;
 
     if (!status) {
       return NextResponse.json(
