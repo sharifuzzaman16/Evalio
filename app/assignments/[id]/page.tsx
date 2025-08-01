@@ -5,14 +5,18 @@ import prisma from "@/lib/prisma";
 import SubmissionForm from "@/components/SubmissionForm";
 import ReviewPanel from "@/components/ReviewPanel";
 
-export default async function AssignmentDetailPage({ params: { id } }: { params: { id: string } }) {
-  
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function AssignmentDetailPage({ params }: PageProps) {
+  const { id } = await params;
+
   const session = await getServerSession(authOptions);
-  
+
   const assignment = await prisma.assignment.findUnique({
     where: { id: id },
   });
-
 
   if (!assignment) {
     notFound();
@@ -29,17 +33,17 @@ export default async function AssignmentDetailPage({ params: { id } }: { params:
       },
     });
   } else if (session?.user?.role === "INSTRUCTOR") {
-allSubmissions = await prisma.submission.findMany({
-    where: { assignmentId: assignment.id },
-    include: {
-      student: true,
-    },
-    orderBy: {
-      student: {
-        name: 'asc',
+    allSubmissions = await prisma.submission.findMany({
+      where: { assignmentId: assignment.id },
+      include: {
+        student: true,
       },
-    },
-});
+      orderBy: {
+        student: {
+          name: 'asc',
+        },
+      },
+    });
   }
 
   const getStatusChipColor = (status: string) => {
