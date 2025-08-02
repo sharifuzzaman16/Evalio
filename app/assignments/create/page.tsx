@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function CreateAssignmentPage() {
   const [title, setTitle] = useState("");
@@ -9,7 +8,6 @@ export default function CreateAssignmentPage() {
   const [deadline, setDeadline] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,8 +23,7 @@ export default function CreateAssignmentPage() {
     setIsSubmitting(false);
 
     if (res.ok) {
-      router.refresh();
-      router.push("/assignments");
+      window.location.href = '/assignments';
     } else {
       const data = await res.json();
       setError(data.message || "Failed to create assignment.");
