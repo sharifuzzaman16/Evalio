@@ -8,7 +8,7 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Assignment Portal",
+  title: "Evalio - Assignment Portal",
   description: "Submit your assignments with ease.",
 };
 
