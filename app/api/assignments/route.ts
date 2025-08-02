@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 export async function POST(request: Request) {
   try {
@@ -29,7 +30,7 @@ export async function POST(request: Request) {
         authorId: session.user.id,
       },
     });
-
+    revalidatePath("/assignments");
     return NextResponse.json(newAssignment, { status: 201 });
   } catch (error) {
     console.error("Error creating assignment:", error);
