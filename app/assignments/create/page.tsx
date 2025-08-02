@@ -25,6 +25,7 @@ export default function CreateAssignmentPage() {
     setIsSubmitting(false);
 
     if (res.ok) {
+      router.refresh();
       router.push("/assignments");
     } else {
       const data = await res.json();
