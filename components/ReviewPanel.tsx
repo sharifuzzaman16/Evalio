@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Submission, SubmissionStatus } from "@prisma/client";
+import { toast } from "sonner";
 
 interface ReviewPanelProps {
   submissions: (Submission & { student: { name: string | null } })[];
@@ -19,6 +20,7 @@ export default function ReviewPanel({ submissions }: ReviewPanelProps) {
   const router = useRouter();
 
   const handleUpdate: UpdateHandler = async (submissionId, status, feedback) => {
+    const toastId = toast.loading("Updating submission...");
     const res = await fetch(`/api/submissions/${submissionId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -26,9 +28,10 @@ export default function ReviewPanel({ submissions }: ReviewPanelProps) {
     });
 
     if (res.ok) {
+      toast.success("Submission updated successfully", { id: toastId });
       router.refresh();
     } else {
-      alert("Failed to update submission.");
+      toast.error("Failed to update submission", { id: toastId });
     }
   };
 
